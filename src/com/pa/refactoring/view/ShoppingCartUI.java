@@ -20,54 +20,59 @@ public class ShoppingCartUI extends BorderPane {
 
     private void createView() {
         // Add product
-        GridPane gridPaneAddProduct = new GridPane();
-        Label labelAddProduct = new Label("Add products to cart");
-        labelAddProduct.setStyle("-fx-font-weight: bold");
+        GridPane gridPaneAddProduct = getGridPane();
+        Label labelAddProduct = getLabelWithStyle("Add products to cart");
         gridPaneAddProduct.add(labelAddProduct, 0, 0);
         gridPaneAddProduct.add(new Label("Name"), 0, 1);
-        TextField textFieldProductName = new TextField();
+        TextField textFieldProductName = getTextField();
         gridPaneAddProduct.add(textFieldProductName, 1, 1);
         gridPaneAddProduct.add(new Label("Price"), 0, 2);
-        TextField textFieldPrice = new TextField();
+        TextField textFieldPrice = getTextField();
         gridPaneAddProduct.add(textFieldPrice, 1, 2);
-        HBox hBoxAddProductButtons = new HBox(6);
-        Button buttonAddProduct = new Button("Add");
-        Button buttonTerminate = new Button("End");
+
         Label labelEnd = new Label();
         setBottom(labelEnd);
 
-        hBoxAddProductButtons.setAlignment(Pos.CENTER_RIGHT);
-        hBoxAddProductButtons.setStyle("-fx-padding: 2px 0 0 0");
+        HBox hBoxAddProductButtons = getHBox();
         Label labelCost = new Label("Total cost: 0.0 €");
         gridPaneAddProduct.add(labelCost, 0, 3);
         gridPaneAddProduct.add(hBoxAddProductButtons, 1, 3);
-        hBoxAddProductButtons.getChildren().addAll(buttonAddProduct, buttonTerminate);
-        buttonAddProduct.setOnAction((ActionEvent e) -> {
-            addToCart(textFieldProductName, textFieldPrice, labelCost);
-        });
-        setTop(gridPaneAddProduct);
-        buttonTerminate.setOnAction((ActionEvent e) -> {
-            endCart(buttonAddProduct, labelEnd, labelCost);
-        });
+
+        getAllButtons(gridPaneAddProduct, textFieldProductName, textFieldPrice, labelEnd, hBoxAddProductButtons, labelCost);
 
         // Shopping cart
-        GridPane gridPaneCartContents = new GridPane();
+        getListViewGridPane();
+
+        createStage();
+    }
+
+    private void getListViewGridPane() {
+        GridPane gridPaneCartContents = getGridPane();
         createListView(gridPaneCartContents);
         setStyle("-fx-padding: 5px");
     }
 
-    private void createListView(GridPane gridPaneCartContents) {
-        Label labelCartContents = new Label("Cart contents");
-        labelCartContents.setStyle("-fx-font-weight: bold");
-        listViewCartContents = new ListView<>();
-        gridPaneCartContents.add(labelCartContents, 0, 0);
-        gridPaneCartContents.add(listViewCartContents, 0, 1);
-        GridPane.setHgrow(listViewCartContents, Priority.ALWAYS);
-        setCenter(gridPaneCartContents);
-        listViewCartContents.getItems().clear();
-        for (Product product : shoppingCart.getProducts()) {
-            listViewCartContents.getItems().add(product);
-        }
+    private void getAllButtons(GridPane gridPaneAddProduct, TextField textFieldProductName, TextField textFieldPrice, Label labelEnd, HBox hBoxAddProductButtons, Label labelCost) {
+        Button buttonAddProduct = getAddButton(textFieldProductName, textFieldPrice, labelCost);
+        Button buttonTerminate = getTerminateButton(labelEnd, labelCost, buttonAddProduct);
+
+        hBoxAddProductButtons.getChildren().addAll(buttonAddProduct, buttonTerminate);
+        setTop(gridPaneAddProduct);
+    }
+
+    private HBox getHBox() {
+        HBox hBoxAddProductButtons = new HBox(6);
+        hBoxAddProductButtons.setAlignment(Pos.CENTER_RIGHT);
+        hBoxAddProductButtons.setStyle("-fx-padding: 2px 0 0 0");
+        return hBoxAddProductButtons;
+    }
+
+    private Button getAddButton(TextField textFieldProductName, TextField textFieldPrice, Label labelCost) {
+        Button buttonAddProduct = new Button("Add");
+        buttonAddProduct.setOnAction((ActionEvent e) -> {
+            addToCart(textFieldProductName, textFieldPrice, labelCost);
+        });
+        return buttonAddProduct;
     }
 
     private void addToCart(TextField textFieldProductName, TextField textFieldPrice, Label labelCost) {
@@ -92,15 +97,15 @@ public class ShoppingCartUI extends BorderPane {
         }
     }
 
-    private void showShoppingCartError(String s) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Shopping Cart Error");
-        alert.setHeaderText(null);
-        alert.setContentText(s);
-        alert.showAndWait();
+    private Button getTerminateButton(Label labelEnd, Label labelCost, Button buttonAddProduct) {
+        Button buttonTerminate = new Button("End");
+        buttonTerminate.setOnAction((ActionEvent e) -> {
+            terminateCart(labelEnd, labelCost, buttonAddProduct);
+        });
+        return buttonTerminate;
     }
 
-    private void endCart(Button buttonAddProduct, Label labelEnd, Label labelCost) {
+    private void terminateCart(Label labelEnd, Label labelCost, Button buttonAddProduct) {
         shoppingCart.terminate();
 
         String strEnd;
@@ -116,12 +121,46 @@ public class ShoppingCartUI extends BorderPane {
         labelEnd.setText(strEnd);
     }
 
+    private Label getLabelWithStyle(String s) {
+        Label labelAddProduct = new Label(s);
+        labelAddProduct.setStyle("-fx-font-weight: bold");
+        return labelAddProduct;
+    }
+
+    private TextField getTextField() {
+        return new TextField();
+    }
+
+    private GridPane getGridPane() {
+        return new GridPane();
+    }
+
+    private void createListView(GridPane gridPaneCartContents) {
+        Label labelCartContents = getLabelWithStyle("Cart contents");
+        listViewCartContents = new ListView<>();
+        gridPaneCartContents.add(labelCartContents, 0, 0);
+        gridPaneCartContents.add(listViewCartContents, 0, 1);
+        GridPane.setHgrow(listViewCartContents, Priority.ALWAYS);
+        setCenter(gridPaneCartContents);
+        listViewCartContents.getItems().clear();
+        for (Product product : shoppingCart.getProducts()) {
+            listViewCartContents.getItems().add(product);
+        }
+    }
+
+    private void showShoppingCartError(String s) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Shopping Cart Error");
+        alert.setHeaderText(null);
+        alert.setContentText(s);
+        alert.showAndWait();
+    }
+
     private void createStage() {
         Stage stage = new Stage();
         Scene scene = new Scene(this, 400, 600);
         stage.setTitle("Shopping Cart");
         stage.setScene(scene);
-        stage.setResizable(false);
         stage.show();
     }
 }
